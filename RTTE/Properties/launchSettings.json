@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "RTTE": {
+      "commandName": "Project",
+      "commandLineArgs": "eng_menu_title.bin",
+      "workingDirectory": "C:\\Users\\yehon\\source\\repos\\RTTE\\RTTE"
+    }
+  }
+}
