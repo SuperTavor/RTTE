@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualBasic;
 using RTTE.Xeen.RhythmThief.EXCLSupport;
-using System.Security.Cryptography;
+using System.Text;
 namespace RTTE.Forms.MainForm
 {
     public partial class MainForm : Form
@@ -19,7 +19,7 @@ namespace RTTE.Forms.MainForm
             {
                 Open(ofd.FileName);
             }
-           
+
         }
 
         private void Open(string fileName)
@@ -39,6 +39,13 @@ namespace RTTE.Forms.MainForm
                 saveToolStripMenuItem.Enabled = true;
                 searchToolStripMenuItem.Enabled = true;
                 massReplaceToolStripMenuItem.Enabled = true;
+                exportAsTXTToolStripMenuItem.Enabled = true;
+                importTXTIntoCurrentFileToolStripMenuItem.Enabled = true;
+                textTreeView.Nodes[0].Text = Path.GetFileNameWithoutExtension(fileName);
+            }
+            catch(FormatException ex)
+            {
+                MessageBox.Show(ex.Message, "RTTE", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
@@ -104,11 +111,20 @@ namespace RTTE.Forms.MainForm
         private void massReplaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var toReplace = Interaction.InputBox("String to replace:", "RTTE");
+            if (string.IsNullOrEmpty(toReplace))
+            {
+                MessageBox.Show("Please input something.");
+                return;
+            }
             var replaceWith = Interaction.InputBox("Replace with: ", "RTTE");
+            int replaced = 0;
             foreach (TreeNode node in textTreeView.Nodes[0].Nodes)
             {
+                if (node.Text != node.Text.Replace(toReplace, replaceWith))
+                    replaced++;
                 node.Text = node.Text.Replace(toReplace, replaceWith);
             }
+            MessageBox.Show($"{replaced} entries edited.");
             textTreeView.Refresh();
         }
 
@@ -116,6 +132,62 @@ namespace RTTE.Forms.MainForm
         private void textColorComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             _currentFile.TextColor = (EXCLTextColor)textColorComboBox.SelectedItem!;
+        }
+
+        private void exportAsTOMLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            StringBuilder tomlSb = new();
+            foreach (TreeNode node in textTreeView.Nodes[0].Nodes)
+            {
+                tomlSb.Append($"text{textTreeView.Nodes[0].Nodes.IndexOf(node)} = {node.Text}\n");
+            }
+            var sfd = new SaveFileDialog();
+            sfd.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
+            sfd.Title = "Save as Plain Text";
+            sfd.DefaultExt = "txt";
+            sfd.AddExtension = true;
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    File.WriteAllText(sfd.FileName, tomlSb.ToString());
+                    MessageBox.Show("Saved.");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error writing TXT: ", ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void importTXTIntoCurrentFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var ofd = new OpenFileDialog();
+            ofd.Title = "Open your plaintext";
+            ofd.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
+            if(ofd.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    List<string> fields = new();
+                    foreach(var line in File.ReadAllLines(ofd.FileName))
+                    {
+                        var parts = line.Split('=',2);
+                        fields.Add(parts[1].Trim());
+                    }
+                    for(int i = 0; i < textTreeView.Nodes[0].Nodes.Count; i++)
+                    {
+                        textTreeView.Nodes[0].Nodes[i].Text = fields[i];
+                    }
+                    textTreeView.Refresh();
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading plaintext file: " + ex.Message, "RTTE", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+            }
         }
     }
 }

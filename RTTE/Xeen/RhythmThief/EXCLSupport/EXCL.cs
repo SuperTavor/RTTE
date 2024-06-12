@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 namespace RTTE.Xeen.RhythmThief.EXCLSupport
 {
     public class EXCL
@@ -31,17 +32,20 @@ namespace RTTE.Xeen.RhythmThief.EXCLSupport
             }
             foreach (var entry in Entries)
             {
-                writer.Write(entry.TrashPadding);
-                writer.Write(entry.EntryMetadata);
+                writer.Write(entry.Unk0);
+                writer.Write(entry.Unk1);
                 if(!string.IsNullOrEmpty(entry.Content))
                 {
-                    writer.Write(new EXCLStr(entry.Content).GetBytes());
+                    writer.Write(Encoding.Unicode.GetBytes(entry.Content));
+                   
                 }
                 else
                 {
                     //Empty entries need 2 empty bytes to represent them, and we also prefix it with a 0x0 like all EXCL strings.
-                    writer.Write([0x0,0x0, 0x0,0x0,0x0]);
+                    writer.Write([0x0,0x0]);
                 }
+                //Null terminator
+                writer.Write([0x0, 0x0]);
             }
             return mem.ToArray();
         }
@@ -55,6 +59,10 @@ namespace RTTE.Xeen.RhythmThief.EXCLSupport
                 throw new FormatException("File is not a valid Rhythm Thief text file");
             }
             Unk0 = reader.ReadInt32();
+            if(Unk0 == 6 || Unk0 == 4)
+            {
+                throw new FormatException($"EXCL{Unk0} detected. Unsupported EXCL variation.\n\nDo not panic, though! EXCL{Unk0} files are not used ingame, and barely contain any text.");
+            }
             TrashPadding = reader.ReadBytes(TrashPadding.Length);
             var textColor = (EXCLTextColor)reader.ReadInt32();
             if (Enum.IsDefined(typeof(EXCLTextColor), textColor))
@@ -77,37 +85,26 @@ namespace RTTE.Xeen.RhythmThief.EXCLSupport
             {
                 //Read entry
                 EXCLEntry entry = new EXCLEntry();
-                entry.TrashPadding = reader.ReadBytes(entry.TrashPadding.Length);
-                entry.EntryMetadata = reader.ReadBytes(entry.EntryMetadata.Length);
-                //Get string
-                StringBuilder resultString = new();
-                while (true)
+                entry.Unk0 = reader.ReadBytes(entry.Unk0.Length);
+                entry.Unk1 = reader.ReadBytes(entry.Unk1.Length);
+                //Read string
+                StringBuilder resultSB = new();
+                while(true)
                 {
-                    var b = reader.ReadByte();
-                    if (b == 0x0)
+                    var chr = reader.ReadBytes(2); 
+                    byte[] nullTermChar = [0x00, 0x00];
+                    if (chr.SequenceEqual(nullTermChar))
                     {
-                        var peekByte = reader.ReadByte();
-                        //Check if there are 2 0x0 in a row, which means nullterm in UTF-16
-                        if (peekByte == 0x0)
-                        {
-                            int toSeek = 1;
-                            if (string.IsNullOrEmpty(resultString.ToString())) toSeek = 3;
-                            //For the remaining nullterm byte
-                            mem.Seek(toSeek, SeekOrigin.Current);
-                            break;
-                        }
-                        else
-                        {
-                            resultString.Append((char)peekByte);
-                        }
+                        if(resultSB.Length == 0) mem.Seek(2,SeekOrigin.Current);
+                        break;
                     }
                     else
                     {
-                        resultString.Append((char)b);
+                        resultSB.Append(Encoding.Unicode.GetChars(chr));
                     }
                 }
-                entry.Content = resultString.ToString();
-                _unmodifiedTextLens.Add(resultString.Length);
+                _unmodifiedTextLens.Add(resultSB.Length);
+                entry.Content = resultSB.ToString();
                 Entries.Add(entry);
             }
 

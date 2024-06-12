@@ -34,6 +34,8 @@
             fileToolStripMenuItem = new ToolStripMenuItem();
             openToolStripMenuItem = new ToolStripMenuItem();
             saveToolStripMenuItem = new ToolStripMenuItem();
+            exportAsTXTToolStripMenuItem = new ToolStripMenuItem();
+            importTXTIntoCurrentFileToolStripMenuItem = new ToolStripMenuItem();
             searchToolStripMenuItem = new ToolStripMenuItem();
             massReplaceToolStripMenuItem = new ToolStripMenuItem();
             aboutToolStripMenuItem = new ToolStripMenuItem();
@@ -71,7 +73,7 @@
             // 
             // fileToolStripMenuItem
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { openToolStripMenuItem, saveToolStripMenuItem });
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { openToolStripMenuItem, saveToolStripMenuItem, exportAsTXTToolStripMenuItem, importTXTIntoCurrentFileToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(37, 20);
             fileToolStripMenuItem.Text = "File";
@@ -80,7 +82,7 @@
             // 
             openToolStripMenuItem.Name = "openToolStripMenuItem";
             openToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.O;
-            openToolStripMenuItem.Size = new Size(146, 22);
+            openToolStripMenuItem.Size = new Size(243, 22);
             openToolStripMenuItem.Text = "Open";
             openToolStripMenuItem.Click += openToolStripMenuItem_Click;
             // 
@@ -89,9 +91,25 @@
             saveToolStripMenuItem.Enabled = false;
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.S;
-            saveToolStripMenuItem.Size = new Size(146, 22);
+            saveToolStripMenuItem.Size = new Size(243, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
+            // 
+            // exportAsTXTToolStripMenuItem
+            // 
+            exportAsTXTToolStripMenuItem.Enabled = false;
+            exportAsTXTToolStripMenuItem.Name = "exportAsTXTToolStripMenuItem";
+            exportAsTXTToolStripMenuItem.Size = new Size(243, 22);
+            exportAsTXTToolStripMenuItem.Text = "Export as plaintext";
+            exportAsTXTToolStripMenuItem.Click += exportAsTOMLToolStripMenuItem_Click;
+            // 
+            // importTXTIntoCurrentFileToolStripMenuItem
+            // 
+            importTXTIntoCurrentFileToolStripMenuItem.Enabled = false;
+            importTXTIntoCurrentFileToolStripMenuItem.Name = "importTXTIntoCurrentFileToolStripMenuItem";
+            importTXTIntoCurrentFileToolStripMenuItem.Size = new Size(243, 22);
+            importTXTIntoCurrentFileToolStripMenuItem.Text = "Import plaintext into current file";
+            importTXTIntoCurrentFileToolStripMenuItem.Click += importTXTIntoCurrentFileToolStripMenuItem_Click;
             // 
             // searchToolStripMenuItem
             // 
@@ -122,7 +140,7 @@
             rTTEVersion100ToolStripMenuItem.Enabled = false;
             rTTEVersion100ToolStripMenuItem.Name = "rTTEVersion100ToolStripMenuItem";
             rTTEVersion100ToolStripMenuItem.Size = new Size(166, 22);
-            rTTEVersion100ToolStripMenuItem.Text = "RTTE Version 1.0.0";
+            rTTEVersion100ToolStripMenuItem.Text = "RTTE Version 1.0.1";
             // 
             // textColorComboBox
             // 
@@ -156,7 +174,7 @@
             Controls.Add(menuStrip1);
             MainMenuStrip = menuStrip1;
             Name = "MainForm";
-            Text = "RTTE";
+            Text = "Rhythm Thief Text Editor";
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             ResumeLayout(false);
@@ -177,5 +195,7 @@
         private ToolStripMenuItem massReplaceToolStripMenuItem;
         private ComboBox textColorComboBox;
         private Label textColorLabel;
+        private ToolStripMenuItem exportAsTXTToolStripMenuItem;
+        private ToolStripMenuItem importTXTIntoCurrentFileToolStripMenuItem;
     }
 }
